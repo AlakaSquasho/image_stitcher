@@ -203,22 +203,13 @@
             min-height: 300px;
             background: var(--panel-bg);
             transition: all 0.3s ease;
+            transition: all 0.3s ease, transform 0.1s ease-out; /* 添加 transform 过渡 */
+            transform-origin: top center; /* 设置缩放基点 */
         }
 
         .canvas-wrapper.has-template {
             border-style: solid;
             border-color: var(--button-primary);
-        }
-
-        .canvas-wrapper.original-size .image-slot {
-            width: auto;
-            height: auto;
-        }
-
-        .canvas-wrapper.original-size .image-slot img {
-            max-width: none;
-            max-height: none;
-            object-fit: initial;
         }
 
         .drop-zone {
@@ -357,13 +348,6 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
-        }
-
-        .toggle-switch {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
         }
 
         .switch {
@@ -516,13 +500,10 @@
             </div>
 
             <div class="tool-group">
-                <label>显示模式</label>
-                <div class="toggle-switch">
-                    <span>适应大小</span>
-                    <div class="switch" id="viewModeSwitch" onclick="toggleViewMode()">
-                        <div class="switch-slider"></div>
-                    </div>
-                    <span>原始尺寸</span>
+                <label for="zoomSlider">显示比例</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="range" id="zoomSlider" min="1" max="200" value="100" style="flex: 1;" oninput="updateZoom()">
+                    <span id="zoomValue" style="width: 45px; text-align: right;">100%</span>
                 </div>
             </div>
 
@@ -547,7 +528,6 @@
     <script>
         let currentTemplate = null;
         let images = [];
-        let isOriginalSize = false;
 
         // 主题切换
         function toggleTheme() {
@@ -740,12 +720,16 @@
             updateExportButton();
         }
 
-        // 切换显示模式
-        function toggleViewMode() {
-            const switchEl = document.getElementById('viewModeSwitch');
-            switchEl.classList.toggle('active');
-            isOriginalSize = switchEl.classList.contains('active');
-            applyViewMode();
+        function updateZoom() {
+            const slider = document.getElementById('zoomSlider');
+            const valueDisplay = document.getElementById('zoomValue');
+            const canvasWrapper = document.getElementById('canvasWrapper');
+            
+            const zoomLevel = slider.value;
+            const scale = zoomLevel / 100;
+            
+            canvasWrapper.style.transform = `scale(${scale})`;
+            valueDisplay.textContent = `${zoomLevel}%`;
         }
 
         function applyViewMode() {
