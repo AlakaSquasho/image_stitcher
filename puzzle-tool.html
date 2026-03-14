@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>在线拼图工具</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -12,49 +14,84 @@
         }
 
         :root {
-            --bg-color: #f5f5f0;
-            --text-color: #333;
-            --panel-bg: #fff;
-            --border-color: #e0e0e0;
-            --template-bg: #fffbf0;
-            --template-active: #ffd700;
-            --button-primary: #4a90e2;
-            --button-hover: #357abd;
-            --shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+            --bg-color: #fbf1df;
+            --text-color: #3b2f1b;
+            --muted-text: #6b4e2e;
+            --panel-bg: rgba(255, 244, 224, 0.92);
+            --panel-border: rgba(217, 119, 6, 0.28);
+            --border-color: rgba(217, 119, 6, 0.3);
+            --template-bg: rgba(255, 240, 214, 0.95);
+            --template-active: #f59e0b;
+            --button-primary: #f59e0b;
+            --button-hover: #d97706;
+            --button-cta: #f97316;
+            --shadow: 0 12px 32px rgba(59, 47, 27, 0.14);
+            --glass-blur: 14px;
+            --focus-ring: 0 0 0 3px rgba(245, 158, 11, 0.35);
+            --button-shadow: 0 10px 18px rgba(245, 158, 11, 0.28);        }
 
         [data-theme="dark"] {
-            --bg-color: #1f1f1f;
-            --text-color: #e0e0e0;
-            --panel-bg: #2a2a2a;
-            --border-color: #444;
-            --template-bg: #3a3a2a;
-            --template-active: #b8860b;
-            --button-primary: #5aa3f0;
-            --button-hover: #4a90e2;
-            --shadow: 0 2px 10px rgba(0,0,0,0.3);
+            --bg-color: #0f1115;
+            --text-color: #e5e7eb;
+            --muted-text: #9ca3af;
+            --panel-bg: rgba(24, 27, 33, 0.85);
+            --panel-border: rgba(148, 163, 184, 0.2);
+            --border-color: rgba(148, 163, 184, 0.2);
+            --template-bg: rgba(30, 33, 40, 0.85);
+            --template-active: #cbd5e1;
+            --button-primary: #94a3b8;
+            --button-hover: #64748b;
+            --button-cta: #cbd5e1;
+            --shadow: 0 14px 36px rgba(2, 6, 23, 0.55);
+            --button-shadow: 0 10px 18px rgba(148, 163, 184, 0.3);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-color);
             color: var(--text-color);
-            transition: all 0.3s ease;
+            transition: background 0.3s ease, color 0.3s ease;
             overflow: hidden;
             height: 100vh;
+            line-height: 1.6;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        :focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                transition: none !important;
+                animation: none !important;
+            }
         }
 
         .header {
-            height: 60px;
+            height: 64px;
             background: var(--panel-bg);
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--panel-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
+            padding: 0 24px;
             box-shadow: var(--shadow);
             z-index: 100;
             position: relative;
+            backdrop-filter: blur(var(--glass-blur));
         }
 
         .logo {
@@ -64,12 +101,17 @@
 
         .theme-toggle {
             position: relative;
-            width: 50px;
-            height: 26px;
+            width: 52px;
+            height: 28px;
             background: var(--border-color);
-            border-radius: 13px;
+            border-radius: 999px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .theme-toggle:focus-visible {
+            box-shadow: var(--focus-ring);
         }
 
         .theme-toggle:hover::after {
@@ -79,18 +121,21 @@
         .theme-toggle::after {
             content: attr(data-tooltip);
             position: absolute;
-            top: -35px;
+            top: calc(100% + 8px);
             right: 0;
             background: var(--panel-bg);
             color: var(--text-color);
-            padding: 5px 10px;
-            border-radius: 4px;
+            padding: 6px 10px;
+            border-radius: 6px;
             font-size: 12px;
             white-space: nowrap;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.2s ease;
             box-shadow: var(--shadow);
             pointer-events: none;
+            border: 1px solid var(--panel-border);
+            backdrop-filter: blur(var(--glass-blur));
+            z-index: 10;
         }
 
         .theme-slider {
@@ -98,11 +143,11 @@
             width: 22px;
             height: 22px;
             background: #fff;
-            border-radius: 50%;
+            border-radius: 999px;
             top: 2px;
             left: 2px;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+            box-shadow: 0 4px 8px rgba(15, 23, 42, 0.2);
         }
 
         [data-theme="dark"] .theme-toggle {
@@ -110,58 +155,85 @@
         }
 
         [data-theme="dark"] .theme-slider {
-            left: 26px;
+            transform: translateX(24px);
         }
 
         .main-container {
             display: flex;
-            height: calc(100vh - 60px);
+            height: calc(100vh - 64px);
+            gap: 18px;
+            padding: 18px;
         }
 
         .sidebar {
-            width: 200px;
+            width: 220px;
             background: var(--panel-bg);
-            border-right: 1px solid var(--border-color);
+            border: 1px solid var(--panel-border);
             padding: 20px;
+            border-radius: 16px;
             overflow-y: auto;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(var(--glass-blur));
         }
 
         .sidebar h3 {
-            margin-bottom: 15px;
-            font-size: 16px;
+            margin-bottom: 16px;
+            font-size: 15px;
+            color: var(--muted-text);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
         }
 
         .template-grid {
             display: grid;
-            gap: 15px;
+            gap: 16px;
         }
 
         .template-item {
             background: var(--template-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
+            border: 1px solid rgba(217, 119, 6, 0.18);
+            border-radius: 14px;
+            padding: 14px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
             text-align: center;
+            min-height: 88px;
+            font-family: inherit;
+            color: var(--text-color);
+            appearance: none;
+            width: 100%;
+        }
+
+        [data-theme="dark"] .template-item {
+            border-color: rgba(148, 163, 184, 0.2);
+        }
+
+        .template-item:active {
+            transform: translateY(1px);
         }
 
         .template-item:hover {
             border-color: var(--button-primary);
-            transform: translateY(-2px);
+            box-shadow: 0 10px 18px rgba(245, 158, 11, 0.2);
+        }
+
+        .template-item:focus-visible {
+            box-shadow: var(--focus-ring);
         }
 
         .template-item.active {
             border-color: var(--template-active);
-            background: color-mix(in srgb, var(--template-active) 20%, var(--template-bg));
+            background: color-mix(in srgb, var(--template-active) 16%, var(--template-bg));
+            box-shadow: 0 12px 24px rgba(245, 158, 11, 0.25);
         }
 
         .template-preview {
             display: flex;
             flex-wrap: wrap;
-            gap: 2px;
+            gap: 4px;
             justify-content: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             min-height: 30px;
             align-items: center;
         }
@@ -170,68 +242,73 @@
             width: 12px;
             height: 12px;
             background: var(--button-primary);
-            border-radius: 2px;
+            border-radius: 3px;
         }
 
         .template-ellipsis {
-            font-size: 14px;
-            color: var(--text-color);
+            font-size: 12px;
+            color: var(--muted-text);
             margin-left: 3px;
         }
 
         .template-name {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 500;
         }
 
         .canvas-container {
             flex: 1;
             position: relative;
-            background: var(--bg-color);
+            background: transparent;
             overflow: auto;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* 将 center 改为 flex-start */
-            padding: 20px; /* 添加内边距来提供视觉缓冲 */
+            align-items: center;
+            padding: 8px;
         }
 
-        .canvas-wrapper {
-            position: relative;
-            border: 2px dashed var(--border-color);
-            border-radius: 12px;
-            min-width: 400px;
-            min-height: 300px;
-            background: var(--panel-bg);
-            transition: all 0.3s ease;
-            transition: all 0.3s ease, transform 0.1s ease-out; /* 添加 transform 过渡 */
-            transform-origin: top center; /* 设置缩放基点 */
+        .canvas-container > .canvas-wrapper {
+            margin: auto;
         }
 
         .canvas-wrapper.has-template {
             border-style: solid;
             border-color: var(--button-primary);
+            border-width: 2px;
         }
 
         .drop-zone {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
             padding: 20px;
             min-height: 100%;
-            align-items: flex-start;
-            align-content: flex-start;
+            align-items: center;
+            align-content: center;
+            justify-content: center;
+        }
+
+        .drop-zone.grid-2x2,
+        .drop-zone.grid-3x3 {
+            gap: 12px;
+            justify-content: center;
+            align-content: center;
         }
 
         .drop-zone.grid-2x2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr;
+            justify-content: center;
+            align-content: center;
         }
 
         .drop-zone.grid-3x3 {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             grid-template-rows: 1fr 1fr 1fr;
+            justify-content: center;
+            align-content: center;
         }
 
         .drop-zone.horizontal {
@@ -243,22 +320,32 @@
         }
 
         .image-slot {
-            border: 2px dashed var(--border-color);
-            border-radius: 8px;
+            border: 1px dashed rgba(217, 119, 6, 0.55);
+            border-radius: 16px;
             min-width: 120px;
             min-height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: var(--template-bg);
-            transition: all 0.3s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
             position: relative;
             overflow: hidden;
+            cursor: pointer;
+        }
+
+        [data-theme="dark"] .image-slot {
+            border-color: rgba(148, 163, 184, 0.45);
+        }
+
+        .image-slot:focus-visible {
+            box-shadow: var(--focus-ring);
         }
 
         .image-slot.drag-over {
             border-color: var(--button-primary);
             background: color-mix(in srgb, var(--button-primary) 10%, var(--template-bg));
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
         }
 
         .image-slot.has-image {
@@ -270,38 +357,46 @@
             max-width: 100%;
             max-height: 100%;
             object-fit: cover;
-            border-radius: 4px;
+            border-radius: 12px;
         }
 
         .image-placeholder {
             text-align: center;
-            color: var(--text-color);
-            opacity: 0.6;
-            font-size: 14px;
+            color: var(--muted-text);
+            font-size: 13px;
+            line-height: 1.4;
         }
 
         .toolbar {
-            width: 250px;
+            width: 260px;
             background: var(--panel-bg);
-            border-left: 1px solid var(--border-color);
+            border: 1px solid var(--panel-border);
             padding: 20px;
+            border-radius: 16px;
             overflow-y: auto;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(var(--glass-blur));
         }
 
         .toolbar h3 {
-            margin-bottom: 20px;
-            font-size: 16px;
+            margin-bottom: 18px;
+            font-size: 15px;
+            color: var(--muted-text);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
         }
 
         .tool-group {
-            margin-bottom: 25px;
+            margin-bottom: 22px;
         }
 
         .tool-group label {
             display: block;
             margin-bottom: 8px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
+            color: var(--muted-text);
         }
 
         .input-group {
@@ -314,29 +409,50 @@
             flex: 1;
             padding: 10px 12px;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background: var(--panel-bg);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
             color: var(--text-color);
             font-size: 14px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        [data-theme="dark"] .form-control {
+            background: rgba(15, 23, 42, 0.85);
+        }
+
+        .form-control::placeholder {
+            color: rgba(71, 85, 105, 0.7);
+        }
+
+        [data-theme="dark"] .form-control::placeholder {
+            color: rgba(148, 163, 184, 0.7);
+        }
+
+        .form-control:focus {
+            border-color: var(--button-primary);
+            box-shadow: var(--focus-ring);
+            outline: none;
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 10px 18px;
             border: none;
-            border-radius: 6px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            min-height: 44px;
         }
 
         .btn-primary {
             background: var(--button-primary);
             color: white;
+            box-shadow: var(--button-shadow);
         }
 
         .btn-primary:hover {
@@ -348,36 +464,22 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
-        .switch {
-            position: relative;
-            width: 44px;
-            height: 24px;
-            background: var(--border-color);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .btn-primary span {
+            display: inline-flex;
+            align-items: center;
         }
 
-        .switch.active {
-            background: var(--button-primary);
-        }
-
-        .switch-slider {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .switch.active .switch-slider {
-            left: 22px;
+        .btn-primary span svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         .no-template {
@@ -386,8 +488,8 @@
             justify-content: center;
             height: 100%;
             text-align: center;
-            color: var(--text-color);
-            opacity: 0.6;
+            color: var(--muted-text);
+            padding: 24px;
         }
 
         .no-template-content h3 {
@@ -395,51 +497,89 @@
             font-size: 18px;
         }
 
+        .no-template-content p {
+            color: var(--muted-text);
+            font-size: 14px;
+        }
+
         .remove-btn {
             position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 20px;
-            height: 20px;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            background: rgba(255, 0, 0, 0.8);
+            background: rgba(239, 68, 68, 0.9);
             color: white;
             border: none;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 16px;
             display: none;
+            align-items: center;
+            justify-content: center;
         }
 
         .image-slot:hover .remove-btn {
-            display: block;
+            display: flex;
+        }
+
+        .remove-btn:hover {
+            background: rgba(220, 38, 38, 0.95);
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                gap: 12px;
+                padding: 12px;
+            }
+
+            .sidebar {
+                width: 200px;
+            }
+
+            .toolbar {
+                width: 240px;
+            }
         }
 
         @media (max-width: 768px) {
             .main-container {
                 flex-direction: column;
+                height: auto;
             }
-            
+
             .sidebar, .toolbar {
                 width: 100%;
                 height: auto;
-                max-height: 200px;
+                max-height: 220px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-container {
+                padding: 10px;
+            }
+
+            .canvas-wrapper {
+                min-width: 320px;
             }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="logo">🧩 在线拼图工具</div>
-        <div class="theme-toggle" data-tooltip="切换主题模式" onclick="toggleTheme()">
+        <div class="logo">在线拼图工具</div>
+        <button class="theme-toggle" type="button" data-tooltip="切换主题模式" onclick="toggleTheme()" aria-label="切换主题模式">
+            <span class="sr-only">切换主题</span>
             <div class="theme-slider"></div>
-        </div>
+        </button>
     </div>
 
     <div class="main-container">
         <div class="sidebar">
             <h3>模板选择</h3>
             <div class="template-grid">
-                <div class="template-item" data-template="horizontal" onclick="selectTemplate('horizontal')">
+                <button class="template-item" type="button" data-template="horizontal" onclick="selectTemplate('horizontal')" aria-label="选择横向拼接模板" aria-pressed="false">
                     <div class="template-preview">
                         <div class="template-rect"></div>
                         <div class="template-rect"></div>
@@ -447,18 +587,18 @@
                         <div class="template-ellipsis">...</div>
                     </div>
                     <div class="template-name">横向拼接</div>
-                </div>
-                
-                <div class="template-item" data-template="vertical" onclick="selectTemplate('vertical')">
+                </button>
+
+                <button class="template-item" type="button" data-template="vertical" onclick="selectTemplate('vertical')" aria-label="选择纵向拼接模板" aria-pressed="false">
                     <div class="template-preview" style="flex-direction: column;">
                         <div class="template-rect"></div>
                         <div class="template-rect"></div>
                         <div class="template-ellipsis">...</div>
                     </div>
                     <div class="template-name">纵向拼接</div>
-                </div>
-                
-                <div class="template-item" data-template="grid2x2" onclick="selectTemplate('grid2x2')">
+                </button>
+
+                <button class="template-item" type="button" data-template="grid2x2" onclick="selectTemplate('grid2x2')" aria-label="选择 2x2 拼接模板" aria-pressed="false">
                     <div class="template-preview" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; width: 32px; height: 32px; margin: 0 auto 8px;">
                         <div class="template-rect"></div>
                         <div class="template-rect"></div>
@@ -466,15 +606,15 @@
                         <div class="template-rect"></div>
                     </div>
                     <div class="template-name">2x2 拼接</div>
-                </div>
-                <div class="template-item" data-template="grid3x3" onclick="selectTemplate('grid3x3')">
+                </button>
+                <button class="template-item" type="button" data-template="grid3x3" onclick="selectTemplate('grid3x3')" aria-label="选择 3x3 拼接模板" aria-pressed="false">
                     <div class="template-preview" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; width: 32px; height: 32px; margin: 0 auto 8px;">
                         <div class="template-rect"></div><div class="template-rect"></div><div class="template-rect"></div>
                         <div class="template-rect"></div><div class="template-rect"></div><div class="template-rect"></div>
                         <div class="template-rect"></div><div class="template-rect"></div><div class="template-rect"></div>
                     </div>
                     <div class="template-name">3x3 拼接</div>
-                </div>
+                </button>
             </div>
         </div>
 
@@ -517,8 +657,15 @@
             </div>
 
             <div class="tool-group">
-                <button class="btn btn-primary" id="exportBtn" onclick="exportImage()" disabled>
-                    <span>📷</span>
+                <button class="btn btn-primary" id="exportBtn" onclick="exportImage()" disabled aria-live="polite">
+                    <span aria-hidden="true">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M6 4h9a2 2 0 0 1 2 2v3"></path>
+                            <path d="M6 10H5a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2h-1"></path>
+                            <path d="M12 12v6"></path>
+                            <path d="m9 15 3 3 3-3"></path>
+                        </svg>
+                    </span>
                     导出图片
                 </button>
             </div>
@@ -536,6 +683,11 @@
             const newTheme = currentTheme === 'dark' ? null : 'dark';
             body.setAttribute('data-theme', newTheme || '');
             localStorage.setItem('theme', newTheme || 'light');
+
+            const themeToggle = document.querySelector('.theme-toggle');
+            if (themeToggle) {
+                themeToggle.setAttribute('aria-pressed', newTheme === 'dark' ? 'true' : 'false');
+            }
         }
 
         // 加载保存的主题
@@ -544,6 +696,11 @@
             if (savedTheme === 'dark') {
                 document.body.setAttribute('data-theme', 'dark');
             }
+
+            const themeToggle = document.querySelector('.theme-toggle');
+            if (themeToggle) {
+                themeToggle.setAttribute('aria-pressed', savedTheme === 'dark' ? 'true' : 'false');
+            }
         }
 
         // 选择模板
@@ -551,18 +708,31 @@
             // 移除之前的活跃状态
             document.querySelectorAll('.template-item').forEach(item => {
                 item.classList.remove('active');
+                item.setAttribute('aria-pressed', 'false');
             });
-            
+
             // 添加新的活跃状态
-            document.querySelector(`[data-template="${template}"]`).classList.add('active');
-            
+            const activeTemplate = document.querySelector(`[data-template="${template}"]`);
+            activeTemplate.classList.add('active');
+            activeTemplate.setAttribute('aria-pressed', 'true');
+
             currentTemplate = template;
             images = [];
-            
+
             // 显示对应的控件
             const countSelect = document.getElementById('imageCount');
             const fixedCount = document.getElementById('fixedCount');
-            
+            const canvasWrapper = document.getElementById('canvasWrapper');
+
+            canvasWrapper.classList.remove('template-horizontal', 'template-vertical', 'template-grid');
+            if (template === 'horizontal') {
+                canvasWrapper.classList.add('template-horizontal');
+            } else if (template === 'vertical') {
+                canvasWrapper.classList.add('template-vertical');
+            } else if (template === 'grid2x2' || template === 'grid3x3') {
+                canvasWrapper.classList.add('template-grid');
+            }
+
             if (template === 'horizontal' || template === 'vertical') {
                 countSelect.style.display = 'block';
                 fixedCount.style.display = 'none';
@@ -584,7 +754,14 @@
             const noTemplate = document.getElementById('noTemplate');
             const dropZone = document.getElementById('dropZone');
             const canvasWrapper = document.getElementById('canvasWrapper');
-            
+
+            if (!currentTemplate) {
+                noTemplate.style.display = 'flex';
+                dropZone.style.display = 'none';
+                canvasWrapper.classList.remove('has-template');
+                return;
+            }
+
             noTemplate.style.display = 'none';
             dropZone.style.display = 'flex';
             canvasWrapper.classList.add('has-template');
@@ -614,6 +791,9 @@
                 const slot = document.createElement('div');
                 slot.className = 'image-slot';
                 slot.dataset.index = i;
+                slot.setAttribute('role', 'button');
+                slot.setAttribute('tabindex', '0');
+                slot.setAttribute('aria-label', `图片槽位 ${i + 1}，点击选择或拖拽图片`);
                 
                 const placeholder = document.createElement('div');
                 placeholder.className = 'image-placeholder';
@@ -635,7 +815,7 @@
                 
                 dropZone.appendChild(slot);
             }
-            applyViewMode();
+            updateZoom();
             updateExportButton();
         }
 
@@ -655,6 +835,13 @@
                 input.click();
             });
             
+            slot.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    slot.click();
+                }
+            });
+
             // 拖拽事件
             slot.addEventListener('dragover', (e) => {
                 e.preventDefault();
@@ -724,10 +911,11 @@
             const slider = document.getElementById('zoomSlider');
             const valueDisplay = document.getElementById('zoomValue');
             const canvasWrapper = document.getElementById('canvasWrapper');
-            
-            const zoomLevel = slider.value;
+
+            const zoomLevel = slider ? slider.value : 100;
             const scale = zoomLevel / 100;
-            
+
+            canvasWrapper.style.transformOrigin = 'center center';
             canvasWrapper.style.transform = `scale(${scale})`;
             valueDisplay.textContent = `${zoomLevel}%`;
         }
@@ -923,13 +1111,15 @@ async function drawImages(ctx, layout) {
                     exportImage();
                 }
             }
-            
+
             // Ctrl/Cmd + D 切换主题
             if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
                 e.preventDefault();
                 toggleTheme();
             }
         });
+
+        window.addEventListener('resize', updateZoom);
     </script>
 </body>
 </html>
