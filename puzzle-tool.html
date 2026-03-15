@@ -819,6 +819,59 @@
             updateExportButton();
         }
 
+        // 获取当前槽位数量
+        function getCurrentSlotCount() {
+            if (!currentTemplate) return 0;
+            if (currentTemplate === 'horizontal' || currentTemplate === 'vertical') {
+                return parseInt(document.getElementById('imageCount').value);
+            }
+            if (currentTemplate === 'grid2x2') return 4;
+            if (currentTemplate === 'grid3x3') return 9;
+            return 0;
+        }
+
+        // 确保槽位数量足够（仅可变模板）
+        function ensureSlotCount(targetCount) {
+            if (currentTemplate !== 'horizontal' && currentTemplate !== 'vertical') return;
+            const countSelect = document.getElementById('imageCount');
+            const currentCount = parseInt(countSelect.value);
+            if (targetCount > currentCount) {
+                countSelect.value = targetCount;
+                updateTemplate();
+            }
+        }
+
+        function getDropTargetIndices(startIndex, fileCount) {
+            const currentCount = getCurrentSlotCount();
+            const requiredCount = startIndex + fileCount;
+
+            if ((currentTemplate === 'horizontal' || currentTemplate === 'vertical') && requiredCount > currentCount) {
+                ensureSlotCount(requiredCount);
+            }
+
+            const finalCount = getCurrentSlotCount();
+            const available = Math.max(0, finalCount - startIndex);
+            const count = Math.min(fileCount, available);
+            return Array.from({ length: count }, (_, i) => startIndex + i);
+        }
+
+        function handleFilesSequential(imageFiles, startIndex) {
+            if (imageFiles.length === 0) return;
+            const indices = getDropTargetIndices(startIndex, imageFiles.length);
+            const overflow = imageFiles.length > indices.length;
+
+            indices.forEach((slotIndex, i) => {
+                const file = imageFiles[i];
+                if (file) {
+                    loadImageFile(file, slotIndex);
+                }
+            });
+
+            if (overflow && (currentTemplate === 'grid2x2' || currentTemplate === 'grid3x3')) {
+                alert('图片数量超过模板容量，已填满可用槽位');
+            }
+        }
+
         // 设置槽位事件
         function setupSlotEvents(slot, index) {
             // 点击选择文件
@@ -826,15 +879,15 @@
                 const input = document.createElement('input');
                 input.type = 'file';
                 input.accept = 'image/*';
+                input.multiple = true;
                 input.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        loadImageFile(file, index);
-                    }
+                    const files = Array.from(e.target.files);
+                    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+                    handleFilesSequential(imageFiles, index);
                 };
                 input.click();
             });
-            
+
             slot.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
@@ -847,21 +900,19 @@
                 e.preventDefault();
                 slot.classList.add('drag-over');
             });
-            
+
             slot.addEventListener('dragleave', () => {
                 slot.classList.remove('drag-over');
             });
-            
+
             slot.addEventListener('drop', (e) => {
                 e.preventDefault();
                 slot.classList.remove('drag-over');
-                
+
                 const files = Array.from(e.dataTransfer.files);
                 const imageFiles = files.filter(file => file.type.startsWith('image/'));
-                
-                if (imageFiles.length > 0) {
-                    loadImageFile(imageFiles[0], index);
-                }
+
+                handleFilesSequential(imageFiles, index);
             });
         }
 
