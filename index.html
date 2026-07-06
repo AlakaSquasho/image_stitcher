@@ -670,17 +670,17 @@
             </div>
 
             <div class="tool-group">
-                <label>图片边框线</label>
+                <label>图片间距</label>
                 <div class="input-group align-center">
-                    <input type="checkbox" id="borderEnabled" onchange="updateBorderSettings()">
-                    <span style="font-size: 13px; color: var(--muted-text);">启用边框线</span>
+                    <input type="checkbox" id="dividerEnabled" onchange="updateDividerSettings()">
+                    <span style="font-size: 13px; color: var(--muted-text);">启用间距</span>
                 </div>
                 <div class="input-group">
-                    <input type="color" class="color-input" id="borderColorPicker" value="#ffffff" onchange="syncBorderColor(true)">
-                    <input type="text" class="form-control" id="borderColorText" placeholder="#rrggbbaa 或 rgba()" value="#ffffff" oninput="syncBorderColor(false)">
+                    <input type="color" class="color-input" id="dividerColorPicker" value="#ffffff" onchange="syncDividerColor(true)">
+                    <input type="text" class="form-control" id="dividerColorText" placeholder="#rrggbbaa 或 rgba()" value="#ffffff" oninput="syncDividerColor(false)">
                 </div>
                 <div class="input-group" style="margin-bottom: 0;">
-                    <input type="number" class="form-control" id="borderWidth" value="0" min="0" max="100" placeholder="宽度 (px)" onchange="updateBorderSettings()">
+                    <input type="number" class="form-control" id="dividerWidth" value="0" min="0" max="100" placeholder="间距 (px)" onchange="updateDividerSettings()">
                 </div>
             </div>
 
@@ -855,7 +855,7 @@
                 dropZone.appendChild(slot);
                 updateSlot(i);
             }
-            applyBorderSettingsToPreview();
+            applyDividerSettingsToPreview();
             updateZoom();
             updateExportButton();
         }
@@ -1021,22 +1021,22 @@
             }
         }
 
-        function getBorderSettings() {
-            const enabled = document.getElementById('borderEnabled')?.checked ?? false;
-            const widthInput = document.getElementById('borderWidth');
-            const colorInput = document.getElementById('borderColorText');
-            const width = Math.max(0, parseInt(widthInput?.value ?? 0, 10) || 0);
-            const color = (colorInput?.value || '').trim() || '#ffffff';
-            return { enabled, width, color };
+        function getDividerSettings() {
+            const dividerEnabled = document.getElementById('dividerEnabled')?.checked ?? false;
+            const dividerWidthInput = document.getElementById('dividerWidth');
+            const dividerColorInput = document.getElementById('dividerColorText');
+            const dividerWidth = Math.max(0, parseInt(dividerWidthInput?.value ?? 0, 10) || 0);
+            const dividerColor = (dividerColorInput?.value || '').trim() || '#ffffff';
+            return { dividerEnabled, dividerWidth, dividerColor };
         }
 
-        function applyBorderSettingsToPreview() {
+        function applyDividerSettingsToPreview() {
             const dropZone = document.getElementById('dropZone');
             if (!dropZone) return;
-            const { enabled, width, color } = getBorderSettings();
-            if (enabled) {
-                dropZone.style.gap = `${width}px`;
-                dropZone.style.background = color;
+            const { dividerEnabled, dividerWidth, dividerColor } = getDividerSettings();
+            if (dividerEnabled) {
+                dropZone.style.gap = `${dividerWidth}px`;
+                dropZone.style.background = dividerColor;
                 dropZone.style.padding = '0px';
             } else {
                 dropZone.style.gap = '';
@@ -1045,9 +1045,9 @@
             }
         }
 
-        function syncBorderColor(fromPicker) {
-            const picker = document.getElementById('borderColorPicker');
-            const text = document.getElementById('borderColorText');
+        function syncDividerColor(fromPicker) {
+            const picker = document.getElementById('dividerColorPicker');
+            const text = document.getElementById('dividerColorText');
             if (!picker || !text) return;
             if (fromPicker) {
                 text.value = picker.value;
@@ -1057,11 +1057,11 @@
                     picker.value = value.slice(0, 7);
                 }
             }
-            updateBorderSettings();
+            updateDividerSettings();
         }
 
-        function updateBorderSettings() {
-            applyBorderSettingsToPreview();
+        function updateDividerSettings() {
+            applyDividerSettingsToPreview();
             updateExportButton();
         }
 
@@ -1091,8 +1091,8 @@
                 canvas.width = width;
                 canvas.height = height;
 
-                const { enabled, width: borderWidth, color } = getBorderSettings();
-                ctx.fillStyle = enabled ? color : '#ffffff';
+                const { dividerEnabled, dividerColor } = getDividerSettings();
+                ctx.fillStyle = dividerEnabled ? dividerColor : '#ffffff';
                 ctx.fillRect(0, 0, width, height);
 
                 // 绘制图片
@@ -1125,8 +1125,8 @@
             let layout = [];
             let totalWidth = 0;
             let totalHeight = 0;
-            const { enabled, width: borderWidth } = getBorderSettings();
-            const gap = enabled && borderWidth > 0 ? borderWidth : 0;
+            const { dividerEnabled, dividerWidth } = getDividerSettings();
+            const dividerGap = dividerEnabled && dividerWidth > 0 ? dividerWidth : 0;
 
             if (currentTemplate === 'horizontal') {
                 const maxHeight = Math.max(...validImages.map(img => img.height));
@@ -1137,10 +1137,10 @@
                         const img = images[key];
                         const scaledWidth = (img.width * maxHeight) / img.height;
                         layout.push({ image: img, dx: currentX, dy: 0, dWidth: scaledWidth, dHeight: maxHeight });
-                        currentX += scaledWidth + gap;
+                        currentX += scaledWidth + dividerGap;
                     }
                 });
-                totalWidth = currentX - gap;
+                totalWidth = currentX - dividerGap;
             } else if (currentTemplate === 'vertical') {
                 const maxWidth = Math.max(...validImages.map(img => img.width));
                 totalWidth = maxWidth;
@@ -1150,17 +1150,17 @@
                         const img = images[key];
                         const scaledHeight = (img.height * maxWidth) / img.width;
                         layout.push({ image: img, dx: 0, dy: currentY, dWidth: maxWidth, dHeight: scaledHeight });
-                        currentY += scaledHeight + gap;
+                        currentY += scaledHeight + dividerGap;
                     }
                 });
-                totalHeight = currentY - gap;
+                totalHeight = currentY - dividerGap;
             } else if (currentTemplate === 'grid2x2' || currentTemplate === 'grid3x3') {
                 const gridSize = currentTemplate === 'grid2x2' ? 2 : 3;
                 const cellWidth = Math.max(...validImages.map(img => img ? img.width : 0)) || 400;
                 const cellHeight = Math.max(...validImages.map(img => img ? img.height : 0)) || 300;
                 
-                totalWidth = (cellWidth * gridSize) + (gap * (gridSize - 1));
-                totalHeight = (cellHeight * gridSize) + (gap * (gridSize - 1));
+                totalWidth = (cellWidth * gridSize) + (dividerGap * (gridSize - 1));
+                totalHeight = (cellHeight * gridSize) + (dividerGap * (gridSize - 1));
                 
                 for (let i = 0; i < gridSize * gridSize; i++) {
                     if (images[i]) {
@@ -1168,8 +1168,8 @@
                         const col = i % gridSize;
                         layout.push({
                             image: images[i],
-                            dx: col * (cellWidth + gap),
-                            dy: row * (cellHeight + gap),
+                            dx: col * (cellWidth + dividerGap),
+                            dy: row * (cellHeight + dividerGap),
                             dWidth: cellWidth,
                             dHeight: cellHeight
                         });

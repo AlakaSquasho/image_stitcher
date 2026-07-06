@@ -11,7 +11,7 @@ A lightweight single-file image stitching tool that runs directly in the browser
 - Supports drag and drop, click-to-select, and paste-from-clipboard image import
 - Automatically fills available slots and crops images to fit each cell on export
 - Lets you adjust the canvas preview zoom level
-- Supports image borders with configurable color and width
+- Supports adjustable image spacing with configurable divider color and width
 - Exports to PNG, JPG, and WEBP
 - Includes light and dark theme modes
 - Includes keyboard shortcuts for export and theme toggle
@@ -21,7 +21,7 @@ A lightweight single-file image stitching tool that runs directly in the browser
 1. Open `index.html` in your browser
 2. Choose a layout from the left sidebar
 3. Drag images into the canvas, or click a slot to select files
-4. Adjust image count, zoom, border settings, and export format in the right toolbar
+4. Adjust image count, zoom, image spacing, and export format in the right toolbar
 5. Click **Export Image** to save the result
 
 ## Interaction Notes
