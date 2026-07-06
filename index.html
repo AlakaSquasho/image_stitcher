@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线拼图工具</title>
+    <title>Image Stitcher</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
@@ -352,13 +352,14 @@
         .image-slot.has-image {
             border-style: solid;
             border-color: var(--button-primary);
+            background: transparent;
         }
 
         .image-slot img {
-            max-width: 100%;
-            max-height: 100%;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
-            border-radius: 12px;
+            border-radius: 16px;
         }
 
         .image-placeholder {
@@ -404,6 +405,23 @@
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
+        }
+
+        .input-group.align-center {
+            align-items: center;
+        }
+
+        .color-input {
+            width: 48px;
+            height: 40px;
+            padding: 0;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: transparent;
+        }
+
+        [data-theme="dark"] .color-input {
+            background: rgba(15, 23, 42, 0.85);
         }
 
         .form-control {
@@ -569,7 +587,7 @@
 </head>
 <body>
     <div class="header">
-        <div class="logo">在线拼图工具</div>
+        <div class="logo">Image Stitcher</div>
         <button class="theme-toggle" type="button" data-tooltip="切换主题模式" onclick="toggleTheme()" aria-label="切换主题模式">
             <span class="sr-only">切换主题</span>
             <div class="theme-slider"></div>
@@ -645,6 +663,21 @@
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <input type="range" id="zoomSlider" min="1" max="200" value="100" style="flex: 1;" oninput="updateZoom()">
                     <span id="zoomValue" style="width: 45px; text-align: right;">100%</span>
+                </div>
+            </div>
+
+            <div class="tool-group">
+                <label>图片边框线</label>
+                <div class="input-group align-center">
+                    <input type="checkbox" id="borderEnabled" onchange="updateBorderSettings()">
+                    <span style="font-size: 13px; color: var(--muted-text);">启用边框线</span>
+                </div>
+                <div class="input-group">
+                    <input type="color" class="color-input" id="borderColorPicker" value="#ffffff" onchange="syncBorderColor(true)">
+                    <input type="text" class="form-control" id="borderColorText" placeholder="#rrggbbaa 或 rgba()" value="#ffffff" oninput="syncBorderColor(false)">
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <input type="number" class="form-control" id="borderWidth" value="0" min="0" max="100" placeholder="宽度 (px)" onchange="updateBorderSettings()">
                 </div>
             </div>
 
@@ -766,13 +799,13 @@
             noTemplate.style.display = 'none';
             dropZone.style.display = currentTemplate === 'grid2x2' || currentTemplate === 'grid3x3' ? 'grid' : 'flex';
             canvasWrapper.classList.add('has-template');
-            
+
             // 清空现有内容
             dropZone.innerHTML = '';
             dropZone.className = 'drop-zone';
-            
+
             let slotCount = 3;
-            
+
             if (currentTemplate === 'horizontal') {
                 dropZone.classList.add('horizontal');
                 slotCount = parseInt(document.getElementById('imageCount').value);
@@ -786,7 +819,7 @@
                 dropZone.classList.add('grid-3x3');
                 slotCount = 9;
             }
-            
+
             // 创建图片槽位
             for (let i = 0; i < slotCount; i++) {
                 const slot = document.createElement('div');
@@ -795,12 +828,12 @@
                 slot.setAttribute('role', 'button');
                 slot.setAttribute('tabindex', '0');
                 slot.setAttribute('aria-label', `图片槽位 ${i + 1}，点击选择或拖拽图片`);
-                
+
                 const placeholder = document.createElement('div');
                 placeholder.className = 'image-placeholder';
                 placeholder.innerHTML = `<div>拖拽图片到此处</div><div style="font-size: 12px; margin-top: 5px;">或点击选择</div>`;
                 slot.appendChild(placeholder);
-                
+
                 // 添加删除按钮
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'remove-btn';
@@ -810,12 +843,13 @@
                     removeImage(i);
                 };
                 slot.appendChild(removeBtn);
-                
+
                 // 添加事件监听
                 setupSlotEvents(slot, i);
-                
+
                 dropZone.appendChild(slot);
             }
+            applyBorderSettingsToPreview();
             updateZoom();
             updateExportButton();
         }
@@ -980,6 +1014,51 @@
                 canvasWrapper.classList.remove('original-size');
             }
         }
+
+        function getBorderSettings() {
+            const enabled = document.getElementById('borderEnabled')?.checked ?? false;
+            const widthInput = document.getElementById('borderWidth');
+            const colorInput = document.getElementById('borderColorText');
+            const width = Math.max(0, parseInt(widthInput?.value ?? 0, 10) || 0);
+            const color = (colorInput?.value || '').trim() || '#ffffff';
+            return { enabled, width, color };
+        }
+
+        function applyBorderSettingsToPreview() {
+            const dropZone = document.getElementById('dropZone');
+            if (!dropZone) return;
+            const { enabled, width, color } = getBorderSettings();
+            if (enabled) {
+                dropZone.style.gap = `${width}px`;
+                dropZone.style.background = color;
+                dropZone.style.padding = '0px';
+            } else {
+                dropZone.style.gap = '';
+                dropZone.style.background = '';
+                dropZone.style.padding = '';
+            }
+        }
+
+        function syncBorderColor(fromPicker) {
+            const picker = document.getElementById('borderColorPicker');
+            const text = document.getElementById('borderColorText');
+            if (!picker || !text) return;
+            if (fromPicker) {
+                text.value = picker.value;
+            } else {
+                const value = text.value.trim();
+                if (/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value)) {
+                    picker.value = value.slice(0, 7);
+                }
+            }
+            updateBorderSettings();
+        }
+
+        function updateBorderSettings() {
+            applyBorderSettingsToPreview();
+            updateExportButton();
+        }
+
         // 更新导出按钮状态
         function updateExportButton() {
             const exportBtn = document.getElementById('exportBtn');
@@ -993,30 +1072,30 @@
                 alert('请先选择模板并添加图片');
                 return;
             }
-            
+
             const format = document.getElementById('exportFormat').value;
-            
+
             try {
                 // 创建画布
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                
+
                 // 计算拼接后的尺寸
                 const { width, height, layout } = calculateCanvasSize();
                 canvas.width = width;
                 canvas.height = height;
-                
-                // 填充白色背景
-                ctx.fillStyle = '#ffffff';
+
+                const { enabled, width: borderWidth, color } = getBorderSettings();
+                ctx.fillStyle = enabled ? color : '#ffffff';
                 ctx.fillRect(0, 0, width, height);
-                
+
                 // 绘制图片
                 await drawImages(ctx, layout);
-                
+
                 // 导出图片
                 const mimeType = format === 'jpg' ? 'image/jpeg' : `image/${format}`;
                 const quality = format === 'jpg' ? 0.9 : undefined;
-                
+
                 canvas.toBlob((blob) => {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -1025,7 +1104,7 @@
                     a.click();
                     URL.revokeObjectURL(url);
                 }, mimeType, quality);
-                
+
             } catch (error) {
                 console.error('导出失败:', error);
                 alert('导出失败，请检查图片是否正确加载');
@@ -1040,7 +1119,8 @@
             let layout = [];
             let totalWidth = 0;
             let totalHeight = 0;
-            const gap = 0; // 可以设置图片间距
+            const { enabled, width: borderWidth } = getBorderSettings();
+            const gap = enabled && borderWidth > 0 ? borderWidth : 0;
 
             if (currentTemplate === 'horizontal') {
                 const maxHeight = Math.max(...validImages.map(img => img.height));
@@ -1094,36 +1174,36 @@
             return { width: totalWidth || 400, height: totalHeight || 300, layout };
         }
 
-// 绘制图片到画布
-async function drawImages(ctx, layout) {
-    for (const item of layout) {
-        const img = new Image();
-        await new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = reject;
-            img.src = item.image.src;
-        });
+        // 绘制图片到画布
+        async function drawImages(ctx, layout) {
+            for (const item of layout) {
+                const img = new Image();
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                    img.src = item.image.src;
+                });
 
-        // 保持比例居中裁剪
-        const imgRatio = img.width / img.height;
-        const cellRatio = item.dWidth / item.dHeight;
-        let sx, sy, sWidth, sHeight;
+                // 保持比例居中裁剪
+                const imgRatio = img.width / img.height;
+                const cellRatio = item.dWidth / item.dHeight;
+                let sx, sy, sWidth, sHeight;
 
-        if (imgRatio > cellRatio) { // 图片更宽，需裁剪左右
-            sHeight = img.height;
-            sWidth = sHeight * cellRatio;
-            sx = (img.width - sWidth) / 2;
-            sy = 0;
-        } else { // 图片更高，需裁剪上下
-            sWidth = img.width;
-            sHeight = sWidth / cellRatio;
-            sx = 0;
-            sy = (img.height - sHeight) / 2;
+                if (imgRatio > cellRatio) { // 图片更宽，需裁剪左右
+                    sHeight = img.height;
+                    sWidth = sHeight * cellRatio;
+                    sx = (img.width - sWidth) / 2;
+                    sy = 0;
+                } else { // 图片更高，需裁剪上下
+                    sWidth = img.width;
+                    sHeight = sWidth / cellRatio;
+                    sx = 0;
+                    sy = (img.height - sHeight) / 2;
+                }
+
+                ctx.drawImage(img, sx, sy, sWidth, sHeight, item.dx, item.dy, item.dWidth, item.dHeight);
+            }
         }
-        
-        ctx.drawImage(img, sx, sy, sWidth, sHeight, item.dx, item.dy, item.dWidth, item.dHeight);
-    }
-}
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', () => {
